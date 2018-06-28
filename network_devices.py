@@ -11,21 +11,24 @@ class NetworkList:
             IP = str(x)
             if '192.168.0' in IP:
                 continue
-            output = subprocess.call(["ping", '-n', str(echo_requests), '-w', '1', IP])
+            output = subprocess.call(["ping", '-n', str(echo_requests), '-i', '1', '-w', '1', IP])
             if output == 0:
                 self.devices.append(IP)
                 print(IP + " alive")                
             # TODO resolve device names
         for x in self.devices:
-            output = subprocess.Popen(["ping", '-n', str(echo_requests), '-a', '-w', '1', IP], stdout=subprocess.PIPE).communicate()[0].decode("utf-8")
+            output = subprocess.Popen(["ping", '-n', str(echo_requests), '-a', '-w', '1', x], stdout=subprocess.PIPE).communicate()[0].decode("utf-8")
+            print(output)
             if '[' not in output:
+                self.deviceNames.append('Unknown Device')
                 continue
             newString = ""
-            charArray = enumerate(output)
-            for y in range(8, 23):
-                if charArray[y] == '[':
+            for index, char in enumerate(output):
+                if index <= 9:
+                    continue
+                if char == ' ' or index > 23:
                     break;
-                newString += charArray[y]
+                newString += char
             if newString != "":
                 self.deviceNames.append(newString)
     # iterate through all hostnames in the subnet mask
@@ -33,13 +36,13 @@ class NetworkList:
         retString = 'The current connected device '
 
         # Grammar
-        if len(self.devices) > 1:
+        if len(self.deviceNames) > 1:
             retString += 's are: '
         else:
             retString += ' is: '
 
         # Append devices connected
-        for s in self.devices:
+        for s in self.deviceNames:
             retString += s + ', '
         return(retString)
     
